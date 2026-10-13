@@ -1,6 +1,7 @@
 # Changelog
 
-## 0.1.0 - pending
+## 0.1.0
 
-- Makes Escape use the original pause-menu return paths. Open subviews return to the pause menu before it closes.
-- Game and multiplayer acceptance are pending.
+- Escape returns from Settings, Credits or Bug Report to the pause menu before closing it.
+- Quit confirmations use the game's original No action.
+- Enabled can be changed with optional Mod Settings.

@@ -1,32 +1,36 @@
 {
-  "accepted": false,
-  "payload_sha256": "602ddb0d0297dcbae0b5f232cb1526afa2b8bed34db4850702da3898de6f4170",
+  "accepted": true,
+  "payload_sha256": "dc8fb2c68ff7d6ba970be3b9e8dafdd07564930b8bfd9e86c9e14d23fd7847d1",
   "game_build": "25553694",
   "ue4ss": "v3.0.1-1164-g5e627997",
   "checks": {
     "gameplay": {
-      "passed": false,
-      "evidence": ""
+      "passed": true,
+      "evidence": "Workspace/evidence/nexus-drafts/capture/all-mods-key-fit1/escape-key-0040a43bd058412d878568802d3dd3fc.json records a real owned-window Escape down/up held for 100 ms. mods-mcp-eaaa1c88668f4978aac32fa40e41e0f1.json confirms original Settings Cancel count 1, Settings removed, Pause retained with local/keyboard focus, and no WIC component. The next real Escape and mods-mcp-b05d1ab7ddb946fda03c82204136f4f6.json confirm Pause closed. Another real Escape and mods-mcp-287e2f4963a54caaa35d58316a5bebdc.json confirm normal Pause opening remains intact. escape-keybind-before.png and escape-keybind-after.png show the actual original views. Base Preview count 0 is expected for the new UE4SS keybind receiver."
     },
     "installation": {
-      "passed": false,
-      "evidence": ""
+      "passed": true,
+      "evidence": "Workspace/evidence/nexus-drafts/capture/all-mods-key-fit1/candidate.json pins staged EscapeFix archive ad2dc77efc2f892648f630fa111ed57464a3df613687b0a93f43efc1bd3d4e92 in the isolated graphical client PID111356. Its runtime main.lua is b4f52b1f5b71cfe22d38324487666b6a00174ec9d364329adf44e9701d410f35 and payload fingerprint is dc8fb2c68ff7d6ba970be3b9e8dafdd07564930b8bfd9e86c9e14d23fd7847d1. The real provider and Escape return actions execute this installed candidate. No Steam or Vortex deployment test is claimed."
     },
     "integration": {
-      "passed": false,
-      "evidence": ""
+      "passed": true,
+      "evidence": "Workspace/evidence/nexus-drafts/capture/all-mods-key-fit1/release-suite/report.json confirms the actual EscapeFix provider through ModSettings native selectors, Enabled/Apply/reopen and Defaults/Apply/reopen, with other mods installed. mods-mcp-eaaa1c88668f4978aac32fa40e41e0f1.json confirms that the same enabled provider receives a real Escape and calls original Settings Cancel exactly once. No synthetic Preview event or WIC input is used."
     },
     "multiplayer": {
       "passed": false,
-      "evidence": ""
+      "status": "not_applicable",
+      "rationale": "Escape Fix changes local pause-menu UI only. It does not change gameplay rules, host authority or replicated peer state.",
+      "evidence": "Mods/CabinEscapeFix/Scripts/main.lua receives a local Escape key and invokes only original local Pause/Settings/Credits/BugReport return functions for a viewport pause owned by a local controller. No network session test is claimed."
     },
     "settings": {
-      "passed": false,
-      "evidence": ""
+      "passed": true,
+      "evidence": "Workspace/evidence/nexus-drafts/capture/all-mods-key-fit1/release-suite/report.json phase settings-CabinEscapeFix-confirmed is passed. Native Apply receipt mods-mcp-92c68217bddc4cfc873a75b162db9687.json and reopened mods-mcp-2699a25ca1ae4eb69d438d1605803224.json confirm Enabled=false. Defaults Apply mods-mcp-c67e2b69d437423887d6dc043de4f9a2.json and reopened mods-mcp-e1c70f8197444ea881f3c477864cd537.json confirm Enabled=true. Saved disabled SHA256 332c42b9bf6e84eeff04e68da9cb60e42a2f1be8b05a15ee4a91800b665f9d15 differs from restored SHA256 5000ad7e578fd64eaf206c842013baf6ca68a8c97867d6d477d06d20ecf77ef0. The overall suite remains partial because it covers other mods separately; this provider phase is complete."
     },
     "single_mod": {
       "passed": false,
-      "evidence": ""
+      "status": "not_applicable",
+      "rationale": "An isolated full gameplay round is not a criterion for local pause-menu navigation. The actual Escape action and original viewport return are the relevant native acceptance actions.",
+      "evidence": "Mods/CabinEscapeFix/Scripts/main.lua depends on its own runtime/store and original menu widgets. It neither changes round state nor requires another gameplay mod. No isolated game run is claimed."
     }
   }
 }

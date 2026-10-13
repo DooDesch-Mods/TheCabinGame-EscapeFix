@@ -1,3 +1,4 @@
 [list]
-[*]Makes Escape use the original pause-menu return paths. Open subviews return to the pause menu before it closes.
+[*]Escape returns from Settings, Credits or Bug Report to the pause menu before closing it.
+[*]Quit confirmations use the original No action.
 [/list]

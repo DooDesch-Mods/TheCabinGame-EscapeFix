@@ -7,10 +7,16 @@ local CLOSE = "BndEvt__WBP_Pause_Menu_Close_B_K2Node_ComponentBoundEvent_0_OnBut
 local NO = "BndEvt__WBP_Pause_Menu_No_B_K2Node_ComponentBoundEvent_12_OnButtonPressedEvent__DelegateSignature"
 local SETTINGS_CANCEL = "BndEvt__SettingsMaster_WBP_Cancel_B_K2Node_ComponentBoundEvent_12_OnButtonPressedEvent__DelegateSignature"
 local focused = {}
+local topFocus = {}
+local subviews = {"WBP_BugReport_C","WBP_Credits_C","SettingsMaster_WBP_C"}
 local function pauses()
     local result = {}
     for _,widget in ipairs(FindAllOf("WBP_Pause_Menu_C") or {}) do
-        if runtime.valid(widget) and widget:IsInViewport() and widget:IsA(PAUSE) then result[#result+1]=widget end
+        if runtime.valid(widget) and widget:IsInViewport() and widget:IsA(PAUSE) then
+            local player,world=widget:GetOwningPlayer(),widget:GetWorld()
+            if runtime.valid(player) and player:IsLocalController() and runtime.valid(world) and runtime.valid(player:GetWorld())
+                and player:GetWorld():GetAddress()==world:GetAddress() then result[#result+1]=widget end
+        end
     end
     return result
 end
@@ -55,37 +61,72 @@ local function closeTop(pause,context)
     end
     return true
 end
-mod:bind("/Script/UMG.UserWidget:OnPreviewKeyDown",function(context,geometry,keyEvent)
-    if not mod.store.values.enabled then return end
-    local widget = context:get()
-    if not runtime.valid(widget) then return end
-    local input = StaticFindObject("/Script/Engine.Default__KismetInputLibrary")
-    assert(runtime.valid(input),"input library unavailable")
-    local key = input:GetKey(keyEvent:get())
-    if key.KeyName:ToString()~="Escape" then return end
-    for _,pause in ipairs(pauses()) do
-        if sameWorld(widget,pause) and closeTop(pause,widget) then
-            mod:log("info","ESC used original menu return path")
-            return StaticFindObject("/Script/UMG.Default__WidgetBlueprintLibrary"):Handled()
-        end
-    end
+assert(type(RegisterKeyBind)=="function" and type(ExecuteInGameThread)=="function" and Key.ESCAPE==27,"required fixed Escape keybind API unavailable")
+local pending=false
+local registered,cause=pcall(RegisterKeyBind,Key.ESCAPE,function()
+    if not mod.store.values.enabled or pending then return end
+    pending=true
+    local queued,queueCause=xpcall(function()
+        ExecuteInGameThread(function()
+            local ok,failure=xpcall(function()
+                assert(IsInGameThread(),"Escape return callback outside game thread")
+                if not mod.store.values.enabled then return end
+                local active=pauses()
+                assert(#active<=1,"local pause menu ambiguous")
+                local pause=active[1]
+                if pause and closeTop(pause,pause) then mod:log("info","ESC used original menu return path") end
+            end,debug.traceback)
+            pending=false
+            if not ok then mod:log("error","Escape return: "..tostring(failure));error(failure) end
+        end)
+    end,debug.traceback)
+    if not queued then pending=false;mod:log("error","Escape dispatch: "..tostring(queueCause));error(queueCause) end
 end)
+if not registered then mod:log("error","Escape registration: "..tostring(cause));error(cause) end
+mod:log("info","fixed Escape keybind registered; gameplay acceptance pending")
 mod:observe("pause focus",function()
-    for _,pause in ipairs(pauses()) do
-        local address = pause:GetAddress()
-        local record = focused[address]
-        if mod.store.values.enabled and not record then
-            record = {widget=pause,original=pause.bIsFocusable}
-            focused[address] = record
-            pause.bIsFocusable = true
-            pause:SetKeyboardFocus()
-        elseif not mod.store.values.enabled and record then
-            pause.bIsFocusable = record.original
-            focused[address] = nil
+    local activePauses = pauses()
+    local function focusable(widget)
+        local address = widget:GetAddress()
+        if not focused[address] then
+            focused[address] = {widget=widget,original=widget.bIsFocusable}
+            widget.bIsFocusable = true
+        end
+        return address
+    end
+    for _,pause in ipairs(activePauses) do
+        local pauseAddress = pause:GetAddress()
+        if mod.store.values.enabled then
+            focusable(pause)
+            local target = pause
+            for _,class in ipairs(subviews) do
+                for _,widget in ipairs(FindAllOf(class) or {}) do
+                    if runtime.valid(widget) and widget:IsInViewport() and sameWorld(widget,pause) then
+                        local visibility = widget:GetVisibility()
+                        if visibility==0 or visibility==3 or visibility==4 then target=widget;break end
+                    end
+                end
+                if target~=pause then break end
+            end
+            local address = focusable(target)
+            if topFocus[pauseAddress]~=address then
+                topFocus[pauseAddress] = address
+                if not target:HasKeyboardFocus() and not target:HasFocusedDescendants() then target:SetKeyboardFocus() end
+            end
+        else
+            topFocus[pauseAddress] = nil
         end
     end
     for address,record in pairs(focused) do
-        if not runtime.valid(record.widget) or not record.widget:IsInViewport() then focused[address]=nil end
+        if not mod.store.values.enabled or not runtime.valid(record.widget) or not record.widget:IsInViewport() then
+            if runtime.valid(record.widget) then record.widget.bIsFocusable=record.original end
+            focused[address]=nil
+        end
+    end
+    for address in pairs(topFocus) do
+        local found = false
+        for _,pause in ipairs(activePauses) do if pause:GetAddress()==address then found=true;break end end
+        if not found then topFocus[address]=nil end
     end
 end)
 return mod

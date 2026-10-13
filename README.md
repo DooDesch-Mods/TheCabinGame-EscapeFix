@@ -2,27 +2,33 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/escapefix](https://support.doodesch.de/escapefix).
 
-Makes Escape use the original pause-menu return paths. Open subviews return to the pause menu before it closes.
+Press Escape to return from Settings, Credits or Bug Report to the pause menu. Press it again to close the pause menu. An open quit confirmation uses the game's original No action.
 
-**Status: test candidate. Game acceptance is pending. No public release yet.**
+This changes only the local pause menu. It does not alter game rules or multiplayer authority.
 
-Target: Steam build `25553694`, Unreal 5.5 and UE4SS `v3.0.1-1164-g5e627997`. Install UE4SS separately.
+## Requirements
 
-1. Close the game and install the required UE4SS runtime in your private test copy.
-2. Copy `Mods/CabinEscapeFix` into `the_cabin_game/Binaries/Win64/ue4ss/Mods`.
+- The Cabin Game, Steam build `25553694`.
+- [UE4SS for the cabin game](https://www.nexusmods.com/thecabingame/mods/4), `v3.0.1-1164-g5e627997`.
+- Optional: [Mod Settings](https://www.nexusmods.com/thecabingame/mods/6) for the Enabled checkbox. Escape Fix is enabled by default without it.
 
-CabinModSettings is optional. Each function mod uses its defaults and its own validated settings file without the Settings card. GraphicsProfiles supplies profile templates without the Settings card and never applies a profile on startup.
+## Install
 
-FastTurns and ShortEvents settings take effect next round and are controlled by the host. FastTurns requires its Lua and overlay on every participating client. Other settings are local. Multiplayer acceptance is pending.
+1. Close the game and install UE4SS.
+2. Copy `Mods/CabinEscapeFix` from the ZIP into `the_cabin_game/Binaries/Win64/ue4ss/Mods`.
 
-Close the game before removal. Remove only this mod's folder and its named container files, if included. Back up `Scripts/settings.dat` first to keep preferences. GraphicsProfiles does not restore graphics automatically on removal; use Restore previous before removal if required.
+With Mod Settings installed, open the main menu's Mods card, choose settings, select Escape Fix and change Enabled. Apply saves the setting.
 
-Rejoin integration requires its matching layout/host-settings adapter and authority copies. That combined installation is unaccepted. Do not overwrite an active Rejoin runtime.
+## Remove
 
-## Build and release
+Close the game and remove only `ue4ss/Mods/CabinEscapeFix`. Back up its `Scripts/settings.dat` first if you want to keep the Enabled preference.
 
-Use Python 3.13. Run `python -m pip install -r requirements-dev.txt`, `python -m unittest discover -s tests -v`, `python tests/check_lua.py`, then `python tools/package.py`.
+## Troubleshooting
 
-The builder writes a deterministic candidate ZIP and checksum in `dist`. Overlay containers are committed build inputs; CI packages them and does not cook Unreal assets or download the game. Runtime Lua and containers are covered by the acceptance fingerprint. `python tools/package.py --release` rejects a missing or stale game acceptance.
+If Escape does not close a pause-menu subview, check that Escape Fix is enabled and that UE4SS loaded the mod. Its messages appear in `ue4ss/UE4SS.log` under `[CabinEscapeFix]`.
 
-CI checks Linux and Windows. See [publishing](docs/publishing.md) for the GitHub/Nexus flow and [Nexus description](docs/nexus.md) for the prepared listing.
+## Development
+
+Use Python 3.13. Install `requirements-dev.txt`, run `python -m unittest discover -s tests -v` and `python tests/check_lua.py`. `python tools/package.py --release` requires acceptance of the exact runtime payload. See [publishing](docs/publishing.md).
+
+By DooDesch. Uses [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS). Code license: [MIT](LICENSE.md).

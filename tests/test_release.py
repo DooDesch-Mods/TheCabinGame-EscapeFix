@@ -56,6 +56,40 @@ class ReleaseTests(unittest.TestCase):
         metadata = set(package.contents()) - set(files)
         self.assertTrue(all(name.startswith(("README", "LICENSE", "CHANGELOG")) and "/" not in name for name in metadata))
 
+    def test_local_ui_allows_only_two_explicit_not_applicable_checks(self):
+        files = {"a.lua": b"return 1"}
+        accepted = {"accepted": True, "payload_sha256": package.fingerprint(files),
+                    "game_build": package.CONFIG["game_build"], "ue4ss": package.CONFIG["ue4ss"],
+                    "checks": {name: {"passed": True, "evidence": "fixture-only"} for name in package.REQUIRED}}
+        for name in ("multiplayer", "single_mod"):
+            accepted["checks"][name] = {"status": "not_applicable", "passed": False,
+                "rationale": "local pause UI criterion", "evidence": "fixture-only source rationale"}
+        with tempfile.TemporaryDirectory(dir=package.ROOT / "dist") as folder, patch.object(package, "ROOT", Path(folder)):
+            path = Path(folder) / "acceptance.json"
+            path.write_text(json.dumps(accepted))
+            package.require_acceptance(files)
+            with patch.object(package, "MOD", "CabinFastTurns"), self.assertRaisesRegex(ValueError, "invalid not_applicable"):
+                package.require_acceptance(files)
+            for name in ("settings", "integration", "installation", "gameplay"):
+                changed = json.loads(json.dumps(accepted))
+                changed["checks"][name] = dict(accepted["checks"]["multiplayer"])
+                path.write_text(json.dumps(changed))
+                with self.subTest(name=name), self.assertRaisesRegex(ValueError, "invalid not_applicable.*"+name):
+                    package.require_acceptance(files)
+            for change in ({"rationale": ""}, {"evidence": ""}, {"passed": True}):
+                changed = json.loads(json.dumps(accepted))
+                changed["checks"]["multiplayer"].update(change)
+                path.write_text(json.dumps(changed))
+                with self.subTest(change=change), self.assertRaisesRegex(ValueError, "invalid not_applicable.*multiplayer"):
+                    package.require_acceptance(files)
+            path.write_text(json.dumps(accepted))
+            with self.assertRaisesRegex(ValueError, "payload mismatch"):
+                package.require_acceptance({"a.lua": b"changed"})
+            accepted["accepted"] = False
+            path.write_text(json.dumps(accepted))
+            with self.assertRaisesRegex(ValueError, "game acceptance is pending"):
+                package.require_acceptance(files)
+
 
 if __name__ == "__main__":
     unittest.main()

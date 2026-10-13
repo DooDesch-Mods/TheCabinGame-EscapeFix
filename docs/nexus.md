@@ -2,19 +2,25 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/escapefix](https://support.doodesch.de/escapefix).
 
-Makes Escape use the original pause-menu return paths. Open subviews return to the pause menu before it closes.
+Press Escape to return from Settings, Credits or Bug Report to the pause menu. Press it again to close the pause menu. An open quit confirmation uses the game's original No action.
 
-**Status: test candidate. Game acceptance is pending. No public release yet.**
+Escape Fix changes only the local pause menu. It does not alter game rules or multiplayer authority.
 
-Target: Steam build `25553694`, Unreal 5.5 and UE4SS `v3.0.1-1164-g5e627997`. Install UE4SS separately.
+## Install
 
-1. Close the game and install the required UE4SS runtime in your private test copy.
-2. Copy `Mods/CabinEscapeFix` into `the_cabin_game/Binaries/Win64/ue4ss/Mods`.
+1. Close the game and install [UE4SS for the cabin game](https://www.nexusmods.com/thecabingame/mods/4).
+2. Copy `Mods/CabinEscapeFix` from the ZIP into `the_cabin_game/Binaries/Win64/ue4ss/Mods`.
 
-CabinModSettings is optional. Each function mod uses its defaults and its own validated settings file without the Settings card. GraphicsProfiles supplies profile templates without the Settings card and never applies a profile on startup.
+Supported baseline: Steam build `25553694` and UE4SS `v3.0.1-1164-g5e627997`.
 
-FastTurns and ShortEvents settings take effect next round and are controlled by the host. FastTurns requires its Lua and overlay on every participating client. Other settings are local. Multiplayer acceptance is pending.
+[Mod Settings](https://www.nexusmods.com/thecabingame/mods/6) is optional. Escape Fix is enabled by default. With Mod Settings installed, use its Enabled checkbox and Apply to save your preference.
 
-Close the game before removal. Remove only this mod's folder and its named container files, if included. Back up `Scripts/settings.dat` first to keep preferences. GraphicsProfiles does not restore graphics automatically on removal; use Restore previous before removal if required.
+## Remove
 
-Rejoin integration requires its matching layout/host-settings adapter and authority copies. That combined installation is unaccepted. Do not overwrite an active Rejoin runtime.
+Close the game and remove `ue4ss/Mods/CabinEscapeFix`. Back up `Scripts/settings.dat` first if you want to keep your preference.
+
+## Help
+
+Check Enabled and the `[CabinEscapeFix]` messages in `ue4ss/UE4SS.log` if Escape does not return from an open pause-menu subview.
+
+By DooDesch. Uses UE4SS. Code license: MIT.
