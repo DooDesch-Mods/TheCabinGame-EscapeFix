@@ -1,5 +1,8 @@
-Press Escape to leave Settings, Credits or Bug Report and return to the pause menu. Press it again to close the pause menu. An open quit confirmation uses the original No action.
+## Changes in 0.1.0
 
-Requires UE4SS v3.0.1-1164-g5e627997 and Steam build 25553694.
+### Added
 
-Mod Settings is optional. Escape Fix is enabled by default and changes only local menu behavior.
+- Press Escape to return from Settings, Credits or Bug Report to the pause menu.
+- Press Escape again to close the pause menu, or cancel an open quit confirmation.
+
+For manual installation and requirements, see README.md in the ZIP.
