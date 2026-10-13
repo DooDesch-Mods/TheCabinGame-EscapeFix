@@ -1,0 +1,102 @@
+name: Update Nexus from a published release
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing published release tag (inspect Nexus before retry)
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+jobs:
+  nexus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: refs/tags/${{ inputs.release_tag }}
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Require game acceptance and build release
+        run: python tools/package.py --release
+      - name: Verify published release and prepare Nexus upload
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          PUBLISH_NEXUS: 'true'
+          NEXUS_FILE_GROUP_ID: ${{ vars.NEXUS_FILE_GROUP_ID }}
+          NEXUS_MOD_ID: ${{ vars.NEXUS_MOD_ID }}
+          NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+
+          workspace = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          sys.path.insert(0, str(workspace / "tools"))
+          import package
+          import release
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+", tag) or tag != "v" + package.VERSION:
+              raise ValueError("release tag does not match the checked-out package version")
+          commit = subprocess.run(
+              ["git", "-C", str(workspace), "rev-parse", "HEAD"],
+              check=True, capture_output=True, text=True,
+          ).stdout.strip()
+          repository = os.environ["GITHUB_REPOSITORY"]
+          published = json.loads(release.run("gh", "api", f"repos/{repository}/releases/tags/{tag}"))
+          if published["tag_name"] != tag or published["draft"] or published["prerelease"]:
+              raise ValueError("Nexus-only upload requires the exact published release tag")
+          refs = json.loads(release.run("gh", "api", f"repos/{repository}/git/matching-refs/tags/{tag}"))
+          if not any(ref["ref"] == "refs/tags/" + tag for ref in refs):
+              raise ValueError("published release tag reference is missing")
+          release.require_tag_target(repository, tag, commit)
+          environment = dict(os.environ)
+          environment["GITHUB_SHA"] = commit
+          subprocess.run([sys.executable, str(workspace / "tools" / "release.py")],
+                         env=environment, check=True, cwd=workspace)
+          PY
+      - name: Upload to Nexus Mods
+        id: nexus
+        if: steps.target.outputs.nexus_ready == 'true'
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: ${{ vars.NEXUS_FILE_GROUP_ID }}
+          filename: ${{ steps.target.outputs.asset }}
+          version: ${{ steps.target.outputs.version }}
+          display_name: ${{ steps.target.outputs.display_name }}
+          description: ${{ steps.target.outputs.notes }}
+          mod_id: ${{ vars.NEXUS_MOD_ID }}
+          changelog: ${{ steps.target.outputs.notes }}
+          category: main
+          allow_mod_manager_download: ${{ vars.NEXUS_VORTEX_READY == 'true' }}
+          primary_mod_manager_download: ${{ vars.NEXUS_VORTEX_READY == 'true' }}
+          show_requirements_pop_up: true
+          archive_existing_version: true
+          update_mod_version: true
+      - name: Verify Nexus acknowledgement and preserve file requirements
+        if: steps.target.outputs.nexus_ready == 'true'
+        env:
+          NEXUS_VERSION_ID: ${{ steps.nexus.outputs.version_id }}
+          NEXUS_FILE_GROUP_ID: ${{ vars.NEXUS_FILE_GROUP_ID }}
+          NEXUS_MOD_ID: ${{ vars.NEXUS_MOD_ID }}
+          NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+        run: python tools/nexus_release.py
+      - name: Save Nexus release receipt
+        if: always()
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: nexus-release-receipt
+          path: dist/nexus-release.json
+          if-no-files-found: warn
