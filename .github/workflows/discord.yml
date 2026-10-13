@@ -38,6 +38,7 @@ jobs:
           PRODUCT_NAME: Cabin Escape Fix
           PRODUCT_SUMMARY: Makes Escape return from pause-menu subviews to the pause menu before closing it.
           PRODUCT_SUPPORT: https://support.doodesch.de/escapefix
+          NEXUS_MOD_URL: ${{ vars.NEXUS_MOD_URL }}
           PRODUCT_THUMBNAIL: https://raw.githubusercontent.com/DooDesch-Mods/TheCabinGame-EscapeFix/main/docs/thumbnail.png
         run: python tools/announce-release.py
       - name: Keep Discord acknowledgement
