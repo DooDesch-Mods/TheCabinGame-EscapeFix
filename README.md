@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/escapefix](https://support.doodesch.de/escapefix).
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 Press Escape to return from Settings, Credits or Bug Report to the pause menu. Press it again to close the pause menu. An open quit confirmation uses the game's original No action.
 
 This changes only the local pause menu. It does not alter game rules or multiplayer authority.
@@ -32,3 +34,9 @@ If Escape does not close a pause-menu subview, check that Escape Fix is enabled 
 Use Python 3.13. Install `requirements-dev.txt`, run `python -m unittest discover -s tests -v` and `python tests/check_lua.py`. `python tools/package.py --release` requires acceptance of the exact runtime payload. See [publishing](docs/publishing.md).
 
 By DooDesch. Uses [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS). Code license: [MIT](LICENSE.md).
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
