@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/escapefix](https://support.doodesch.de/escapefix).
 
+[![Discord](https://mods.doodesch.de/img/badge.png)](https://mods.doodesch.de)
+
 Press Escape to return from Settings, Credits or Bug Report to the pause menu. Press it again to close the pause menu. An open quit confirmation uses the game's original No action.
 
 Escape Fix changes only the local pause menu. It does not alter game rules or multiplayer authority.
@@ -24,3 +26,9 @@ Close the game and remove `ue4ss/Mods/CabinEscapeFix`. Back up `Scripts/settings
 Check Enabled and the `[CabinEscapeFix]` messages in `ue4ss/UE4SS.log` if Escape does not return from an open pause-menu subview.
 
 By DooDesch. Uses UE4SS. Code license: MIT.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.png)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
